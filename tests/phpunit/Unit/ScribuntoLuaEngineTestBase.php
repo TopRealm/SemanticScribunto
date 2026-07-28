@@ -2,27 +2,31 @@
 
 namespace SMW\Scribunto\Tests\Unit;
 
+use MediaWiki\Config\Config;
+use MediaWiki\Extension\Scribunto\Tests\Engines\LuaCommon\LuaEngineTestBase;
 use PHPUnit\Framework\TestResult;
 use SMW\Scribunto\ScribuntoLuaLibrary;
-use Scribunto_LuaEngineTestBase;
 
 /**
- * Encapsulation of the Scribunto_LuaEngineTestBase class
+ * Encapsulation of the LuaEngineTestBase class
  *
  * @group Test
  * @group Database
  *
- * @license GNU GPL v2+
+ * @license GPL-2.0-or-later
  * @since 1.0
  *
  * @author mwjames
  */
-abstract class ScribuntoLuaEngineTestBase extends Scribunto_LuaEngineTestBase
-{
+abstract class ScribuntoLuaEngineTestBase extends LuaEngineTestBase {
 	/**
 	 * @var ScribuntoLuaLibrary
 	 */
 	private $scribuntoLuaLibrary;
+
+	protected function getEngineName(): string {
+		return 'LuaStandalone';
+	}
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -34,7 +38,7 @@ abstract class ScribuntoLuaEngineTestBase extends Scribunto_LuaEngineTestBase
 
 	protected function tearDown(): void {
 		unset( $this->scribuntoLuaLibrary );
-		parent::tearDown();;
+		parent::tearDown();
 	}
 
 	/**
@@ -49,7 +53,7 @@ abstract class ScribuntoLuaEngineTestBase extends Scribunto_LuaEngineTestBase
 	/**
 	 * Only needed for MW 1.31
 	 */
-	public function run( TestResult $result = null ): TestResult {
+	public function run( ?TestResult $result = null ): TestResult {
 		// MW 1.31
 		$this->setCliArg( 'use-normal-tables', true );
 
@@ -57,10 +61,9 @@ abstract class ScribuntoLuaEngineTestBase extends Scribunto_LuaEngineTestBase
 	}
 
 	/**
-	 * @see Scribunto_LuaEngineTestBase -> MediaWikiTestCase
+	 * @see LuaEngineTestBase -> MediaWikiIntegrationTestCase
 	 */
-	protected function overrideMwServices( \Config $configOverrides = null, array $services = [] ) {
-
+	protected function overrideMwServices( ?Config $configOverrides = null, array $services = [] ) {
 		/**
 		 * `MediaWikiTestCase` isolates the result with  `MediaWikiTestResult` which
 		 * ecapsultes the commandline args and since we need to use "real" tables
