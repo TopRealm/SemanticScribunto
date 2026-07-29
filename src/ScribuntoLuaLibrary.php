@@ -254,24 +254,25 @@ class ScribuntoLuaLibrary extends LibraryBase {
 	}
 
 	/**
-	 * Converts an array into a shape suitable for a Lua table: integer keys shift
-	 * by +1 (Lua arrays are 1-indexed), string keys are left untouched. Recurses
-	 * into nested arrays. Non-array inputs are returned unchanged.
+	 * Converts an array into a shape suitable for a Lua table.
 	 *
-	 * Precondition: integer-keyed inputs are expected to use contiguous 0-based
-	 * indices (as produced by `array_values()` or `QueryResultSerializer` output).
-	 * Sparse integer keys are shifted by +1 here rather than re-indexed to a
-	 * contiguous sequence — diverging from the pre-7.0 `array_unshift` + `unset`
-	 * implementation. No caller in this codebase feeds sparse keys.
+	 * Uses the pre-7.0 `array_unshift` + `unset` approach which correctly
+	 * handles both 0-based and 1-based integer-keyed inputs: a dummy element
+	 * is prepended then removed, shifting 0-based keys to 1-based while
+	 * leaving already-1-based keys unchanged. String keys are left untouched.
+	 * Recurses into nested arrays. Non-array inputs are returned unchanged.
 	 */
 	private function convertArrayToLuaTable( $ar ) {
 		if ( !is_array( $ar ) ) {
 			return $ar;
 		}
-		$result = [];
-		foreach ( $ar as $key => $value ) {
-			$newKey = is_int( $key ) ? $key + 1 : $key;
-			$result[$newKey] = $this->convertArrayToLuaTable( $value );
+		$result = $ar;
+		array_unshift( $result, null );
+		unset( $result[0] );
+		foreach ( $result as $key => &$value ) {
+			if ( is_array( $value ) ) {
+				$value = $this->convertArrayToLuaTable( $value );
+			}
 		}
 		return $result;
 	}
